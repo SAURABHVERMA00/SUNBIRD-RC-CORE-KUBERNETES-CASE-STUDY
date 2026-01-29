@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: id-gen-config
+data:
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres-service:5432/registry"
+  SPRING_FLYWAY_BASELINE_ON_MIGRATE: "true"
+  AUTOCREATE_NEW_SEQ: "true"
+  IDFORMAT_FROM_MDMS: "false"
+  EGOV_MDMS_PROVIDER: "org.egov.id.masterdata.provider.DBMasterDataProvider"

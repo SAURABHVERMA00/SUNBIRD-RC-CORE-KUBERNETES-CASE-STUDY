@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bulk-issuance-deployment
+  labels:
+    app: bulk-issuance
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bulk-issuance
+  template:
+    metadata:
+      labels:
+        app: bulk-issuance
+    spec:
+      containers:
+      - name: bulk-issuance
+        image: ghcr.io/sunbird-rc/sunbird-rc-bulk-issuance
+        imagePullPolicy: IfNotPresent
+
+        ports:
+        - containerPort: 5665  
+       
+        envFrom:
+        - configMapRef:
+            name: bulk-issuance-config
+            
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5665
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5665
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 3
+          failureThreshold: 3
+       

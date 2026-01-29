@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: id-gen-service
+  labels:
+    app: id-gen
+spec:
+
+  selector:
+    app: id-gen
+  ports:
+    - protocol: TCP
+      port: 8088
+      targetPort: 8088
+  

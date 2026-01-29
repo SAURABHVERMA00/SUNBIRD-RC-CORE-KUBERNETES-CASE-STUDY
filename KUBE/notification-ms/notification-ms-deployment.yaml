@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-ms-deployment
+  labels:
+    app: notification-ms
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification-ms
+  template:
+    metadata:
+      labels:
+        app: notification-ms
+    spec:
+      containers:
+      - name: notification-ms
+        image: ghcr.io/sunbird-rc/sunbird-rc-notification-service:v2.0.0-rc1
+        imagePullPolicy: IfNotPresent
+
+        ports:
+        - containerPort: 8765
+
+        envFrom:
+        - configMapRef:
+            name: notification-ms-config
+
+       
+        readinessProbe:
+          httpGet:
+            path: /notification-service/v1/health
+            port: 8765
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+        # Optional but recommended
+        livenessProbe:
+          httpGet:
+            path: /notification-service/v1/health
+            port: 8765
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3

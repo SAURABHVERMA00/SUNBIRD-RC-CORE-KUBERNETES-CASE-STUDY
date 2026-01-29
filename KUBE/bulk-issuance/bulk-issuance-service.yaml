@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bulk-issuance-service
+  labels:
+    app: bulk-issuance
+spec:
+
+  selector:
+    app: bulk-issuance
+  ports:
+    - protocol: TCP
+      name: http
+      port: 5665
+      targetPort: 5665
+  type: ClusterIP

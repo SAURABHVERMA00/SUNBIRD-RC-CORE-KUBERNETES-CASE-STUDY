@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio-deployment
+  labels:
+    app: minio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minio
+  template:
+    metadata:
+      labels:
+        app: minio
+    spec:
+      containers:
+      - name: minio
+        image: quay.io/minio/minio
+        imagePullPolicy: IfNotPresent
+
+        # Docker command → Kubernetes args
+        args:
+          - server
+          - --address
+          - 0.0.0.0:9000
+          - --console-address
+          - 0.0.0.0:9001
+          - /data
+
+        ports:
+        - containerPort: 9000
+        - containerPort: 9001
+
+        envFrom:
+        - secretRef:
+            name: minio-secret
+
+        volumeMounts:
+        - name: data
+          mountPath: /data
+
+        # Docker healthcheck → Kubernetes readiness
+        readinessProbe:
+          httpGet:
+            path: /minio/health/live
+            port: 9000
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+        # Optional but recommended
+        livenessProbe:
+          httpGet:
+            path: /minio/health/live
+            port: 9000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: minio-pvc

@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: elastic-deployment
+  labels:
+    app: elastic-search
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: elastic-search
+  template:
+    metadata:
+      labels:
+        app: elastic-search
+    spec:
+      containers:
+      - name: elastic-search
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.12.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9200
+        - containerPort: 9300
+        env:
+        - name: discovery.type
+          valueFrom:
+            configMapKeyRef:
+              name: elasticsearch-config
+              key: discovery.type
+        - name: ES_JAVA_OPTS
+          valueFrom:
+            configMapKeyRef:
+              name: elasticsearch-config
+              key: ES_JAVA_OPTS
+        - name: xpack.security.enabled
+          valueFrom:
+            configMapKeyRef:
+              name: elasticsearch-config
+              key: xpack.security.enabled
+        - name: ELASTIC_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: elasticsearch-secret
+              key: ELASTIC_PASSWORD
+        - name: BASIC_AUTH
+          valueFrom:
+            secretKeyRef:
+              name: elasticsearch-secret
+              key: BASIC_AUTH
+        volumeMounts:
+        - name: elasticsearch-storage
+          mountPath: /usr/share/elasticsearch/data/*
+        readinessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - |
+              curl -f http://localhost:9200/_cluster/health \
+                -H "Authorization: Basic ${BASIC_AUTH}" 
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 5
+        startupProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - |
+              curl -f http://localhost:9200 \
+                -H "Authorization: Basic ${BASIC_AUTH}"
+          failureThreshold: 30   # 30 × 10s = 5 minutes
+          periodSeconds: 10
+
+      volumes:
+       - name: elasticsearch-storage
+         persistentVolumeClaim:
+            claimName: elasticsearch-pvc

@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: certificate-api-deployment
+  labels:
+    app: certificate-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: certificate-api
+  template:
+    metadata:
+      labels:
+        app: certificate-api
+    spec:
+      containers:
+      - name: certificate-api
+        image: ghcr.io/sunbird-rc/sunbird-rc-certificate-api:v2.0.0-rc1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8078  
+        env:
+        - name: PORT
+          value: "8078"
+          
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8078
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8078
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+       

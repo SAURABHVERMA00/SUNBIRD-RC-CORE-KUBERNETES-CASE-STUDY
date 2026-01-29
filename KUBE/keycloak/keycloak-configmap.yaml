@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keycloak-config
+  labels:
+    app: keycloak
+data:
+  DB_VENDOR: postgres
+  DB_ADDR: postgres-service
+  DB_PORT: "5432"
+  DB_DATABASE: registry
+  KEYCLOAK_LOGO: https://svgshare.com/i/hCs.svg
+  PROXY_ADDRESS_FORWARDING: "true"
+  KEYCLOAK_IMPORT: /opt/jboss/keycloak/imports/realm-export.json

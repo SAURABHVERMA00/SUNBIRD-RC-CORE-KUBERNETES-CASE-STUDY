@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bulk-issuance-config
+  labels:
+    app: bulk-issuance
+data:
+  REGISTRY_BASE_URL: "http://registry-service:8081/"
+  DATABASE_HOST: "postgres-service"

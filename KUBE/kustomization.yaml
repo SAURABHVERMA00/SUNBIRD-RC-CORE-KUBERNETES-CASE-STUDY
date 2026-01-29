@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - db/postgres-deployment.yaml
+  - db/postgres-service.yaml
+  - db/postgres-pvolume.yaml
+  - db/postgres-secret.yaml
+  - elastic/elastic-deployment.yaml
+  - elastic/elastic-service.yaml
+  - elastic/elastic-configmap.yaml
+  - elastic/elastic-secret.yaml
+  - elastic/elastic-volume.yaml
+  - keycloak/keycloak-deployment.yaml
+  - keycloak/keycloak-service.yaml
+  - keycloak/keycloak-configmap.yaml
+  - keycloak/keycloak-secret.yaml
+  - registry/registry-deployment.yaml
+  - registry/registry-service.yaml
+  - registry/registry-configmap.yaml
+  - registry/registry-secret.yaml

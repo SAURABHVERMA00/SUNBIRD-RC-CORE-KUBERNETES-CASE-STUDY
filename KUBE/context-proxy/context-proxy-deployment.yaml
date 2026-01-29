@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: context-proxy-deployment
+  labels:
+    app: context-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: context-proxy
+  template:
+    metadata:
+      labels:
+        app: context-proxy
+    spec:
+      containers:
+      - name: context-proxy
+        image: ghcr.io/sunbird-rc/sunbird-rc-context-proxy-service
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 4400
+      
+        readinessProbe:
+          httpGet:
+          path: /health
+          port: 4400
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+         
+
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 4400
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+      
+
+   

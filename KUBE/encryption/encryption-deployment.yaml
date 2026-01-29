@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: encryption-deployment
+  labels:
+    app: encryption
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: encryption
+  template:
+    metadata:
+      labels:
+        app: encryption
+    spec:
+      containers:
+      - name: encryption
+        image: ghcr.io/sunbird-rc/encryption-service:v2.0.0-rc1
+        ports:
+        - containerPort: 8013
+        envFrom:
+        - configMapRef:
+            name: encryption-config
+        - secretRef:
+            name: encryption-secret
+
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8013
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8013
+          initialDelaySeconds: 60
+          periodSeconds: 30
+
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8013
+          failureThreshold: 30
+          periodSeconds: 10
+     

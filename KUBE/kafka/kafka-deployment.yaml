@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka-deployment
+  labels:
+    app: kafka
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      containers:
+      - name: kafka
+        image: confluentinc/cp-kafka:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9092
+  
+        envFrom:
+        - configMapRef:
+            name: kafka-config
+      
+        readinessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - kafka-topics --bootstrap-server localhost:9092 --list
+          initialDelaySeconds: 30
+          periodSeconds: 20
+          timeoutSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: 9092
+          initialDelaySeconds: 60
+          periodSeconds: 30
+      
+
+   

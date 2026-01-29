@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metrics-deployment
+  labels:
+    app: metrics
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: metrics
+  template:
+    metadata:
+      labels:
+        app: metrics
+    spec:
+      containers:
+      - name: metrics
+        image: ghcr.io/sunbird-rc/sunbird-rc-metrics
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8070
+  
+        envFrom:
+        - configMapRef:
+            name: metrics-config
+      
+        readinessProbe:
+          httpGet:
+          path: /health
+          port: 8070
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8070
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 3
+          failureThreshold: 3
+      
+
+   

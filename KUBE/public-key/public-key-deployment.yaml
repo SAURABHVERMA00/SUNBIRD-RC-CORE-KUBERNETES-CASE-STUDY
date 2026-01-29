@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: public-key-deployment
+  labels:
+    app: public-key
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: public-key
+  template:
+    metadata:
+      labels:
+        app: public-key
+    spec:
+      containers:
+      - name: public-key
+        image: ghcr.io/sunbird-rc/sunbird-rc-public-key-service
+        imagePullPolicy: IfNotPresent
+
+        ports:
+        - containerPort: 3300
+
+        env:
+        - name: CONFIG_BASE_PATH
+          value: /etc/keys
+        
+
+        volumeMounts:
+        - name: key-imports
+          mountPath: /etc/keys
+          readOnly: true
+
+        # Docker healthcheck equivalent
+        readinessProbe:
+          httpGet:
+            path: /public-key-service/api/v1/health
+            port: 3300
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+        # Optional but recommended
+        livenessProbe:
+          httpGet:
+            path: /public-key-service/api/v1/health
+            port: 3300
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+      volumes:
+      - name: key-imports
+        configMap:
+          name: public-key-imports
+
+
+# kubectl create configmap public-key-imports \
+ # --from-file=imports \
+ # --dry-run=client -o yaml > public-key-imports.yaml
+# run: kubectl apply -f public-key-imports.yaml

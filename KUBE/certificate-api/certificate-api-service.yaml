@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: certificate-api-service
+  labels:
+    app: certificate-api
+spec:
+  selector:
+    app: certificate-api
+  ports:
+  - name: http
+    port: 8078
+    targetPort: 8078
+  type: ClusterIP

@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: digilocker-certificate-api-deployment
+  labels:
+    app: digilocker-certificate-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: digilocker-certificate-api
+  template:
+    metadata:
+      labels:
+        app: digilocker-certificate-api
+    spec:
+      containers:
+      - name: digilocker-certificate-api
+        image: ghcr.io/sunbird-rc/sunbird-rc-digilocker-certificate-api
+        imagePullPolicy: IfNotPresent
+
+        ports:
+        - containerPort: 8087
+
+        envFrom:
+        - configMapRef:
+            name: digilocker-env-config
+        - secretRef:
+            name: digilocker-secret
+
+        volumeMounts:
+        - name: digilocker-config
+          mountPath: /go/config
+          readOnly: true
+
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8087
+          initialDelaySeconds: 10
+          periodSeconds: 10
+
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8087
+          initialDelaySeconds: 30
+          periodSeconds: 30
+
+      volumes:
+      - name: digilocker-config
+        configMap:
+          name: digilocker-config-files
+
+#kubectl create configmap digilocker-config-files \
+ # --from-file=services/digilocker-certificate-api/config \
+ # --dry-run=client -o yaml > digilocker-config-files.yaml
+#kubectl apply -f digilocker-config-files.yaml 

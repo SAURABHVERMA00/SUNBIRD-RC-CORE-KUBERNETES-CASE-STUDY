@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: context-proxy-service
+  labels:
+    app: context-proxy
+spec:
+  selector:
+    app: context-proxy
+  
+  ports:
+    - protocol: TCP
+      name: http
+      port: 4400
+      targetPort: 4400
+   

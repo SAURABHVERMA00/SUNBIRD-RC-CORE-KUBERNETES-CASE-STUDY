@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: encryption-config
+data:
+  SERVER_PORT: "8013"
+  SERVER_SERVLET_CONTEXT_PATH: "/"
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres-service:5432/registry"
+  SPRING_FLYWAY_URL: "jdbc:postgresql://postgres-service:5432/registry"
+  EGOV_MDMS_PROVIDER: "org.egov.enc.masterdata.provider.DBMasterDataProvider"
+  SPRING_FLYWAY_BASELINE_ON_MIGRATE: "true"
+  MANAGEMENT_ENDPOINTS_WEB_BASE_PATH: "/"
