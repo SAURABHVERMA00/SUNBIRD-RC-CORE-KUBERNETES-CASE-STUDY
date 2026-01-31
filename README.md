@@ -27,3 +27,27 @@ More documentation can be found [here](https://docs.sunbirdrc.dev/).
 
 This repository's contents are licensed under the MIT license. See the
 [license file](./LICENSE) for more details.
+
+## Configmap file
+command: 
+kubectl create configmap file_name-config-files \
+  --from-file=folder/file_name \
+  --dry-run=client -o yaml > file_name-config-files.yaml
+
+
+1.kubectl create configmap file_name-config-files -  You are creating a ConfigMap
+
+2.--from-file=folder/file_name  - Take everything inside this directory and store it in the ConfigMap
+
+3.--dry-run=client - Do NOT create the ConfigMap in Kubernetes . Just simulate it locally
+Why this is best practice:
+You can review the YAML
+You can commit it to Git
+You avoid accidental cluster changes
+
+4.-o yaml - Kubernetes prints the resource as YAML . Instead of creating it
+
+5.> file_name-config-files.yaml - Save the generated YAML to a file
+
+
+final command: kubectl apply -f file_name-config-files.yaml 
