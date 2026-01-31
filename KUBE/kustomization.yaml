@@ -19,3 +19,43 @@ resources:
   - registry/registry-service.yaml
   - registry/registry-configmap.yaml
   - registry/registry-secret.yaml
+  - encryption/encryption-deployment.yaml
+  - encryption/encryption-service.yaml
+  - encryption/encryption-configmap.yaml
+  - encryption/encryption-secret.yaml
+  - id-gen/id-gen-deployment.yaml
+  - id-gen/id-gen-service.yaml
+  - id-gen/id-gen-configmap.yaml
+  - claim-ms/claim-ms-deployment.yaml
+  - claim-ms/claim-ms-service.yaml
+  - claim-ms/claim-ms-configmap.yaml
+  - claim-ms/claim-ms-secret.yaml
+  - certificate-signer/certificate-signer-deployment.yaml
+  - certificate-signer/certificate-signer-service.yaml
+  - certificate-api/certificate-api-deployment.yaml
+  - certificate-api/certificate-api-service.yaml
+  - file-storage/file-storage-deployment.yaml
+  - file-storage/file-storage-service.yaml
+  - file-storage/file-storage-secret.yaml
+  - file-storage/file-storage-pvolume.yaml
+  - zookeeper/zookeeper-deployment.yaml
+  - zookeeper/zookeeper-service.yaml
+  - kafka/kafka-deployment.yaml
+  - kafka/kafka-service.yaml
+  - kafka/kafka-configmap.yaml
+  - redis/redis-deployment.yaml
+  - redis/redis-service.yaml
+  - notification-ms/notification-ms-deployment.yaml
+  - notification-ms/notification-ms-service.yaml
+  - notification-ms/notification-ms-configmap.yaml
+  - public-key/public-key-deployment.yaml
+  - public-key/public-key-service.yaml
+  - context-proxy/context-proxy-deployment.yaml
+  - context-proxy/context-proxy-service.yaml
+  - clickhouse/clickhouse-deployment.yaml
+  - clickhouse/clickhouse-service.yaml
+  - bulk-issuance/bulk-issuance-deployment.yaml
+  - bulk-issuance/bulk-issuance-service.yaml
+  - bulk-issuance/bulk-issuance-configmap.yaml
+  - nginx/nginx-deployment.yaml
+  - nginx/nginx-service.yaml

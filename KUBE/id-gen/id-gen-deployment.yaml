@@ -23,9 +23,24 @@ spec:
         - configMapRef:
             name: id-gen-config
 
+        startupProbe:
+          httpGet:
+            path: /egov-idgen/health
+            port: 8088
+          failureThreshold: 60  # 5 minutes
+          periodSeconds: 10
+          timeoutSeconds: 5
         readinessProbe:
           httpGet:
-            path: /health
+            path: /egov-idgen/health
             port: 8088
-          periodSeconds: 10
+          initialDelaySeconds: 120
+          periodSeconds: 30
+          timeoutSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /egov-idgen/health
+            port: 8088
+          initialDelaySeconds: 90
+          periodSeconds: 30
        

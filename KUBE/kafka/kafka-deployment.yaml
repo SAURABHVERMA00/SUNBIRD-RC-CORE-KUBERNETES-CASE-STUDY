@@ -5,6 +5,7 @@ metadata:
   labels:
     app: kafka
 spec:
+  serviceName: "kafka-service"
   replicas: 1
   selector:
     matchLabels:
@@ -16,7 +17,7 @@ spec:
     spec:
       containers:
       - name: kafka
-        image: confluentinc/cp-kafka:latest
+        image: confluentinc/cp-kafka:7.4.0
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 9092
@@ -25,19 +26,22 @@ spec:
         - configMapRef:
             name: kafka-config
       
+        startupProbe:
+          tcpSocket:
+            port: 9092
+          failureThreshold: 30
+          periodSeconds: 10
+
         readinessProbe:
-          exec:
-            command:
-            - sh
-            - -c
-            - kafka-topics --bootstrap-server localhost:9092 --list
-          initialDelaySeconds: 30
-          periodSeconds: 20
-          timeoutSeconds: 10
-        livenessProbe:
           tcpSocket:
             port: 9092
           initialDelaySeconds: 60
+          periodSeconds: 20  
+           
+        livenessProbe:
+          tcpSocket:
+            port: 9092
+          initialDelaySeconds: 120
           periodSeconds: 30
       
 

@@ -29,18 +29,19 @@ spec:
           httpGet:
             path: /health
             port: 8013
+          initialDelaySeconds: 30
           periodSeconds: 10
         livenessProbe:
           httpGet:
             path: /health
             port: 8013
-          initialDelaySeconds: 60
+          initialDelaySeconds: 120
           periodSeconds: 30
 
         startupProbe:
           httpGet:
             path: /health
             port: 8013
-          failureThreshold: 30
+          failureThreshold: 60
           periodSeconds: 10
      

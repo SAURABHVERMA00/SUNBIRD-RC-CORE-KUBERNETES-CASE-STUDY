@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: certificate-signer-service
+  labels:
+    app: certificate-signer
+spec:
+  selector:
+    app: certificate-signer
+  ports:
+  - name: http
+    port: 8079
+    targetPort: 8079
+  type: ClusterIP

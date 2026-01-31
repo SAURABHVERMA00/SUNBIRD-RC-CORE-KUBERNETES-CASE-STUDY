@@ -1,44 +1,49 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: context-proxy-deployment
+  name: claim-ms-deployment
   labels:
-    app: context-proxy
+    app: claim-ms
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: context-proxy
+      app: claim-ms
   template:
     metadata:
       labels:
-        app: context-proxy
+        app: claim-ms
     spec:
       containers:
-      - name: context-proxy
-        image: ghcr.io/sunbird-rc/sunbird-rc-context-proxy-service
+      - name: claim-ms
+        image: ghcr.io/sunbird-rc/sunbird-rc-claim-ms:latest
         imagePullPolicy: IfNotPresent
+
         ports:
-        - containerPort: 4400
-      
+        - containerPort: 8082
+
+        envFrom:
+        - configMapRef:
+            name: claim-ms-config
+        - secretRef:
+            name: claim-ms-secret
+
+        # Docker healthcheck → Kubernetes readiness
         readinessProbe:
           httpGet:
             path: /health
-            port: 4400
+            port: 8082
           initialDelaySeconds: 10
           periodSeconds: 30
           timeoutSeconds: 5
           failureThreshold: 3
-         
 
+        # Optional but recommended
         livenessProbe:
           httpGet:
             path: /health
-            port: 4400
+            port: 8082
           initialDelaySeconds: 30
           periodSeconds: 30
           timeoutSeconds: 5
           failureThreshold: 3
-      
-
-   

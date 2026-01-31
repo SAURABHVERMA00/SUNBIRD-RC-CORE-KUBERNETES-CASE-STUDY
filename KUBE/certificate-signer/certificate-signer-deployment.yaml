@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: certificate-signer-deployment
+  labels:
+    app: certificate-signer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: certificate-signer
+  template:
+    metadata:
+      labels:
+        app: certificate-signer
+    spec:
+      containers:
+      - name: certificate-signer
+        image: ghcr.io/sunbird-rc/sunbird-rc-certificate-signer:latest
+        imagePullPolicy: IfNotPresent
+
+        ports:
+        - containerPort: 8079
+
+        env:
+        - name: PORT
+          value: "8079"
+        - name: TIME_ZONE
+          value: "Asia/Kolkata"
+
+        volumeMounts:
+        - name: signer-config
+          mountPath: /etc/signer
+          readOnly: true
+
+        # Docker healthcheck → Kubernetes readiness
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8079
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+        # Optional but recommended
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8079
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+      volumes:
+      - name: signer-config
+        configMap:
+          name: signer-imports
+
+
+# kubectl create configmap signer-imports \
+#  --from-file=imports \
+# --dry-run=client -o yaml > signer-imports.yaml
+# run: kubectl apply -f signer-imports.yaml

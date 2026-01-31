@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: claim-ms-config
+  labels:
+    app: claim-ms
+data:
+  connectionInfo_uri: "jdbc:postgresql://postgres-service:5432/registry"
+  sunbirdrc_url: "http://registry-service:8081"

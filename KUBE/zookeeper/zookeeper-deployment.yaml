@@ -5,6 +5,7 @@ metadata:
   labels:
     app: zookeeper
 spec:
+  serviceName: "zookeeper-service"
   replicas: 1
   selector:
     matchLabels:
@@ -25,8 +26,23 @@ spec:
         - name: ZOOKEEPER_TICK_TIME
           value: "2000"
 
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/zookeeper
+
         readinessProbe:
           tcpSocket:
             port: 2181
           initialDelaySeconds: 10
           periodSeconds: 10
+
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+      labels:
+        app: zookeeper
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 5Gi

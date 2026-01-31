@@ -27,8 +27,7 @@ spec:
             name: bulk-issuance-config
             
         readinessProbe:
-          httpGet:
-            path: /health
+          tcpSocket:
             port: 5665
           initialDelaySeconds: 10
           periodSeconds: 10
@@ -36,8 +35,7 @@ spec:
           failureThreshold: 3
 
         livenessProbe:
-          httpGet:
-            path: /health
+          tcpSocket:
             port: 5665
           initialDelaySeconds: 30
           periodSeconds: 30

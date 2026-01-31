@@ -5,9 +5,10 @@ metadata:
   labels:
     app: zookeeper
 spec:
+  clusterIP: None
   selector:
     app: zookeeper
   ports:
   - port: 2181
     targetPort: 2181
-  type: ClusterIP
+   

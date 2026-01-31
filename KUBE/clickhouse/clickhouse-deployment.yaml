@@ -5,6 +5,7 @@ metadata:
   labels:
     app: clickhouse
 spec:
+  serviceName: "clickhouse-service"
   replicas: 1
   selector:
     matchLabels:

@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: certificate-api
-        image: ghcr.io/sunbird-rc/sunbird-rc-certificate-api:v2.0.0-rc1
+        image: ghcr.io/sunbird-rc/sunbird-rc-certificate-api:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8078  

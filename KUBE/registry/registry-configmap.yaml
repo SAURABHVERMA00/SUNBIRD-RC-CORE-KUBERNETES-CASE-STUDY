@@ -19,7 +19,7 @@ data:
   event_topic: events
   event_providerName: dev.sunbirdrc.registry.service.impl.KafkaEventService
 
-  elastic_search_connection_url: es:9200
+  elastic_search_connection_url: elastic-service:9200
   elastic_search_scheme: http
   elastic_search_auth_enabled: "false"
   elastic_search_username: elastic
@@ -40,23 +40,23 @@ data:
   sunbird_sso_client_id: registry-frontend
 
   claims_enabled: "false"
-  claims_url: http://claim-ms:8082
+  claims_url: http://claim-ms-service:8082
 
   signature_enabled: "false"
   signature_provider: dev.sunbirdrc.registry.service.impl.SignatureV1ServiceImpl
-  sign_url: http://certificate-signer:8079/sign
-  verify_url: http://certificate-signer:8079/verify
-  sign_health_check_url: http://certificate-signer:8079/health
+  sign_url: http://certificate-signer-service:8079/sign
+  verify_url: http://certificate-signer-service:8079/verify
+  sign_health_check_url: http://certificate-signer-service:8079/health
 
   certificate_enabled: "false"
-  pdf_url: http://certificate-api:8078/api/v1/certificatePDF
-  certificate_health_check_url: http://certificate-api:8078/health
+  pdf_url: http://certificate-api-service:8078/api/v1/certificatePDF
+  certificate_health_check_url: http://certificate-api-service:8078/health
   template_base_url: http://registry-service:8081/api/v1/templates/
 
   sunbird_keycloak_user_set_password: "true"
 
   filestorage_enabled: "false"
-  filestorage_connection_url: http://file-storage:9000
+  filestorage_connection_url: http://file-storage-service:9000
   filestorage_bucket_key: issuance
 
   registry_base_apis_enable: "false"
@@ -69,7 +69,7 @@ data:
   kafka_bootstrap_address: kafka-service:9092
 
   webhook_enabled: "false"
-  webhook_url: http://localhost:5001/api/v1/callback
+ # webhook_url: http://localhost:5001/api/v1/callback
 
   redis_host: redis-service
   redis_port: "6379"
@@ -78,6 +78,9 @@ data:
   expand_reference: "false"
 
   swagger_title: Sunbird Registry and Credential
+
+
+  did_enabled: "false"
 
   notification_async_enabled: "false"
   notification_enabled: "false"
