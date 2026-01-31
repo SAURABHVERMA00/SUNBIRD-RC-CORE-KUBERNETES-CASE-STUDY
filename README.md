@@ -28,6 +28,12 @@ More documentation can be found [here](https://docs.sunbirdrc.dev/).
 This repository's contents are licensed under the MIT license. See the
 [license file](./LICENSE) for more details.
 
+## How to deploy
+kubectl apply -k SUNBIRD-RC-CORE-KUBERNETES/
+
+## Health checks
+Using readiness vs liveness vs startup
+
 ## Configmap file
 command: 
 kubectl create configmap file_name-config-files \
