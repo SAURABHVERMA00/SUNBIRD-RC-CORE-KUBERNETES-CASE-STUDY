@@ -59,3 +59,12 @@ resources:
   - bulk-issuance/bulk-issuance-configmap.yaml
   - nginx/nginx-deployment.yaml
   - nginx/nginx-service.yaml
+  - vault/vault-deployment.yaml
+  - vault/vault-service.yaml
+  # - vault/vault-pvolume.yaml
+  - identity/identity-deployment.yaml
+  - identity/identity-service.yaml
+  - identity/identity-configmap.yaml
+  - identity/identity-secret.yaml
+  - credential-schema/credential-schema-deployment.yaml
+  - credential-schema/credential-schema-service.yaml

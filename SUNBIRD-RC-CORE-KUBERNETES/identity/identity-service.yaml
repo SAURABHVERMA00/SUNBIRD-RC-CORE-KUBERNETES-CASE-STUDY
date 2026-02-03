@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: identity-service
+  labels:
+    app: identity
+spec:
+  selector:
+    app: identity
+  ports:
+    - port: 3332
+      targetPort: 3332
+  type: ClusterIP

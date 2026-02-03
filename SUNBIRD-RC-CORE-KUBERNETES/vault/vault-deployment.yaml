@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vault-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vault
+  template:
+    metadata:
+      labels:
+        app: vault
+    spec:
+      containers:
+        - name: vault
+          image: vault:1.13.3
+          imagePullPolicy: IfNotPresent
+
+          args:
+            - "vault"
+            - "server"
+            - "-config=/vault/config/vault.json"
+          ports:
+            - containerPort: 8200
+
+          env:
+            - name: VAULT_ADDR
+              value: "http://0.0.0.0:8200"
+            - name: VAULT_API_ADDR
+              value: "http://0.0.0.0:8200"
+            - name: VAULT_ADDRESS
+              value: "http://0.0.0.0:8200"
+            - name: VAULT_SKIP_CHOWN
+              value: "true"
+          volumeMounts:
+            - name: vault-config
+              mountPath: /vault/config
+            - name: vault-data
+              mountPath: /vault/file
+          securityContext:
+            capabilities:
+              add:
+                - IPC_LOCK
+          readinessProbe:
+            tcpSocket:
+              port: 8200
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 5
+          livenessProbe:
+            tcpSocket:
+              port: 8200
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 5
+          startupProbe:
+            tcpSocket:
+              port: 8200
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 30
+      volumes:
+        - name: vault-config
+          configMap:
+            name: vault-config
+            
+        - name: vault-data
+          persistentVolumeClaim:
+            claimName: vault-pvc
+
+# i just add vault.json file in config map
+#kubectl create configmap vault-config \
+#  --from-file=vault.json \
+#  --dry-run=client -o yaml > vault-config.yaml
+ # run this command to create config map file
+ # kubectl apply -f vault-config.yaml

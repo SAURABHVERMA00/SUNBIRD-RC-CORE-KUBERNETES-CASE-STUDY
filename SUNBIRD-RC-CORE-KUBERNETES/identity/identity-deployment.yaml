@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: identity-deployment
+spec:
+  
+  replicas: 1
+  selector:
+    matchLabels:
+      app: identity
+  template:
+    metadata:
+      labels:
+        app: identity
+    spec:
+      serviceAccountName: identity-sa
+      containers:
+        - name: identity
+          image: ghcr.io/sunbird-rc/sunbird-rc-identity-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3332
+
+          envFrom:
+            - configMapRef:
+                name: identity-config
+            - secretRef:
+                name: identity-secret
+          env:
+            - name: PRISMA_MIGRATE
+              value: "true"
+        
+          readinessProbe:
+            tcpSocket:
+              port: 3332
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 5
+
+          livenessProbe:
+            tcpSocket:
+              port: 3332
+            initialDelaySeconds: 30
+            periodSeconds: 10
+
+          startupProbe:
+            tcpSocket:
+              port: 3332
+            initialDelaySeconds: 60
+            failureThreshold: 30
+            periodSeconds: 10

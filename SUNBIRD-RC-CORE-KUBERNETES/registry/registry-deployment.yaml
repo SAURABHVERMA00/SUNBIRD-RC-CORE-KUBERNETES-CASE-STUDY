@@ -25,15 +25,18 @@ spec:
             name: registry-secret
         - configMapRef:
             name: registry-config
+        env:
+        - name: PRISMA_MIGRATE
+          value: "true"
     
         readinessProbe:
           httpGet:
             path: /health
             port: 8081
-          initialDelaySeconds: 30
+          initialDelaySeconds: 60
           periodSeconds: 10
           timeoutSeconds: 5
-          failureThreshold: 6
+          failureThreshold: 60
         livenessProbe:
           httpGet:
             path: /health
@@ -43,8 +46,7 @@ spec:
           timeoutSeconds: 5
           failureThreshold: 5
         startupProbe:
-          httpGet:
-            path: /health
+          tcpSocket:
             port: 8081
          
           failureThreshold: 60
