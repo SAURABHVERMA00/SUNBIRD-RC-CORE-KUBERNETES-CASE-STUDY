@@ -26,19 +26,26 @@ spec:
                 name: identity-config
             - secretRef:
                 name: identity-secret
+
           env:
             - name: PRISMA_MIGRATE
               value: "true"
-        
+            - name: VAULT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: identity-secret
+                  key: VAULT_TOKEN
           readinessProbe:
-            tcpSocket:
+            httpGet:
+              path: /health
               port: 3332
             initialDelaySeconds: 30
             periodSeconds: 10
             failureThreshold: 5
 
           livenessProbe:
-            tcpSocket:
+            httpGet:
+              path: /health
               port: 3332
             initialDelaySeconds: 30
             periodSeconds: 10
