@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak-service
+  labels:
+    app: keycloak
+spec:
+  type: ClusterIP
+  selector:
+    app: keycloak
+  
+  ports:
+    - protocol: TCP
+      name: http
+      port: 8080
+      targetPort: 8080  
+    - protocol: TCP
+      name: admin
+      port: 9990
+      targetPort: 9990
+  
+# 8080 is the Keycloak application port.
+# This is the public-facing HTTP endpoint for login, token requests, and user-facing auth flows.
+# 9990 is the Keycloak admin/management port.
+# This is used by the Keycloak admin console and internal management APIs, not by normal application auth traffic.

@@ -2,69 +2,109 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - db/postgres-deployment.yaml
-  - db/postgres-service.yaml
-  - db/postgres-pvolume.yaml
-  - db/postgres-secret.yaml
-  - elastic/elastic-deployment.yaml
-  - elastic/elastic-service.yaml
-  - elastic/elastic-configmap.yaml
-  - elastic/elastic-secret.yaml
-  - elastic/elastic-volume.yaml
-  - keycloak/keycloak-deployment.yaml
-  - keycloak/keycloak-service.yaml
-  - keycloak/keycloak-configmap.yaml
-  - keycloak/keycloak-secret.yaml
-  - registry/registry-deployment.yaml
-  - registry/registry-service.yaml
-  - registry/registry-configmap.yaml
-  - registry/registry-secret.yaml
-  - encryption/encryption-deployment.yaml
-  - encryption/encryption-service.yaml
-  - encryption/encryption-configmap.yaml
-  - encryption/encryption-secret.yaml
-  - id-gen/id-gen-deployment.yaml
-  - id-gen/id-gen-service.yaml
-  - id-gen/id-gen-configmap.yaml
-  - claim-ms/claim-ms-deployment.yaml
-  - claim-ms/claim-ms-service.yaml
-  - claim-ms/claim-ms-configmap.yaml
-  - claim-ms/claim-ms-secret.yaml
-  - certificate-signer/certificate-signer-deployment.yaml
-  - certificate-signer/certificate-signer-service.yaml
-  - certificate-api/certificate-api-deployment.yaml
-  - certificate-api/certificate-api-service.yaml
-  - file-storage/file-storage-deployment.yaml
-  - file-storage/file-storage-service.yaml
-  - file-storage/file-storage-secret.yaml
-  - file-storage/file-storage-pvolume.yaml
-  - zookeeper/zookeeper-deployment.yaml
-  - zookeeper/zookeeper-service.yaml
-  - kafka/kafka-deployment.yaml
-  - kafka/kafka-service.yaml
-  - kafka/kafka-configmap.yaml
-  - redis/redis-deployment.yaml
-  - redis/redis-service.yaml
-  - notification-ms/notification-ms-deployment.yaml
-  - notification-ms/notification-ms-service.yaml
-  - notification-ms/notification-ms-configmap.yaml
-  - public-key/public-key-deployment.yaml
-  - public-key/public-key-service.yaml
-  - context-proxy/context-proxy-deployment.yaml
-  - context-proxy/context-proxy-service.yaml
-  - clickhouse/clickhouse-deployment.yaml
-  - clickhouse/clickhouse-service.yaml
-  - bulk-issuance/bulk-issuance-deployment.yaml
-  - bulk-issuance/bulk-issuance-service.yaml
-  - bulk-issuance/bulk-issuance-configmap.yaml
-  - nginx/nginx-deployment.yaml
-  - nginx/nginx-service.yaml
-  - vault/vault-deployment.yaml
-  - vault/vault-service.yaml
-  # - vault/vault-pvolume.yaml
-  - identity/identity-deployment.yaml
-  - identity/identity-service.yaml
-  - identity/identity-configmap.yaml
-  - identity/identity-secret.yaml
-  - credential-schema/credential-schema-deployment.yaml
-  - credential-schema/credential-schema-service.yaml
+  # frontend
+  - frontend/context-proxy/context-proxy-deployment.yaml
+  - frontend/context-proxy/context-proxy-service.yaml
+  
+  - frontend/nginx/nginx-deployment.yaml
+  - frontend/nginx/nginx-service.yaml
+
+  # backend
+  - backend/bulk-issuance/bulk-issuance-deployment.yaml
+  - backend/bulk-issuance/bulk-issuance-service.yaml
+  - backend/bulk-issuance/bulk-issuance-configmap.yaml
+
+  - backend/certificate-signer/certificate-signer-deployment.yaml
+  - backend/certificate-signer/certificate-signer-service.yaml
+
+  - backend/certificate-api/certificate-api-deployment.yaml
+  - backend/certificate-api/certificate-api-service.yaml
+
+  - backend/claim-ms/claim-ms-deployment.yaml
+  - backend/claim-ms/claim-ms-service.yaml
+  - backend/claim-ms/claim-ms-configmap.yaml
+  - backend/claim-ms/claim-ms-secret.yaml
+
+  # - backend/credential/credential-deployment.yaml
+  # - backend/credential/credential-service.yaml
+  # - backend/credential/credential-configmap.yaml
+
+  - backend/credential-schema/credential-schema-deployment.yaml
+  - backend/credential-schema/credential-schema-service.yaml
+
+  - backend/digilocker-certificate-api/digilocker-certificate-api-deployment.yaml
+  - backend/digilocker-certificate-api/digilocker-certificate-api-service.yaml
+  - backend/digilocker-certificate-api/digilocker-certificate-api-secret.yaml
+  - backend/digilocker-certificate-api/digilocker-certificate-api-configmap.yaml
+
+  - backend/encryption/encryption-deployment.yaml
+  - backend/encryption/encryption-service.yaml
+  - backend/encryption/encryption-configmap.yaml
+  - backend/encryption/encryption-secret.yaml
+
+  - backend/file-storage/file-storage-deployment.yaml
+  - backend/file-storage/file-storage-service.yaml
+  - backend/file-storage/file-storage-secret.yaml
+  - backend/file-storage/file-storage-pvolume.yaml
+
+  - backend/identity/identity-deployment.yaml
+  - backend/identity/identity-service.yaml
+  - backend/identity/identity-configmap.yaml
+  - backend/identity/identity-secret.yaml
+
+  - backend/id-gen/id-gen-deployment.yaml
+  - backend/id-gen/id-gen-service.yaml
+  - backend/id-gen/id-gen-configmap.yaml
+
+  - backend/notification-ms/notification-ms-deployment.yaml
+  - backend/notification-ms/notification-ms-service.yaml
+  - backend/notification-ms/notification-ms-configmap.yaml
+
+  # infrastructure
+  - infrastructure/clickhouse/clickhouse-deployment.yaml
+  - infrastructure/clickhouse/clickhouse-service.yaml
+
+  - infrastructure/db/postgres-deployment.yaml
+  - infrastructure/db/postgres-service.yaml
+  - infrastructure/db/postgres-secret.yaml
+
+  - infrastructure/elastic/elastic-deployment.yaml
+  - infrastructure/elastic/elastic-service.yaml
+  - infrastructure/elastic/elastic-configmap.yaml
+  - infrastructure/elastic/elastic-secret.yaml
+
+  - infrastructure/kafka/kafka-deployment.yaml
+  - infrastructure/kafka/kafka-service.yaml
+  - infrastructure/kafka/kafka-configmap.yaml
+
+  - backend/keycloak/keycloak-deployment.yaml
+  - backend/keycloak/keycloak-service.yaml
+  - backend/keycloak/keycloak-configmap.yaml
+  - backend/keycloak/keycloak-secret.yaml
+
+  - infrastructure/metrics/metrics-deployment.yaml
+  - infrastructure/metrics/metrics-service.yaml
+  - infrastructure/metrics/metrics-configmap.yaml
+
+  - infrastructure/public-key/public-key-deployment.yaml
+  - infrastructure/public-key/public-key-service.yaml
+
+  - infrastructure/redis/redis-deployment.yaml
+  - infrastructure/redis/redis-service.yaml
+
+  - infrastructure/registry/registry-deployment.yaml
+  - infrastructure/registry/registry-service.yaml
+  - infrastructure/registry/registry-configmap.yaml
+  - infrastructure/registry/registry-secret.yaml
+
+  - infrastructure/vault/vault-deployment.yaml
+  - infrastructure/vault/vault-service.yaml
+
+  - infrastructure/zookeeper/zookeeper-deployment.yaml
+  - infrastructure/zookeeper/zookeeper-service.yaml
+
+
+
+# ingress
+  - ingress/ingress.yaml
+  - ingress/ingress-rewrites.yaml

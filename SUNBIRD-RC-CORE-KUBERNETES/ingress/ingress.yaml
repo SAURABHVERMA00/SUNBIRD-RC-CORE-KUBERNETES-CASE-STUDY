@@ -1,0 +1,46 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+
+metadata:
+  name: sunbird-ingress
+
+spec:
+  ingressClassName: nginx
+
+  rules:
+  - host: sunbird.local
+    http:
+      paths:
+
+      # FRONTEND
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-service
+            port:
+              number: 80
+
+      - path: /proxy
+        pathType: Prefix
+        backend:
+          service:
+            name: context-proxy-service
+            port:
+              number: 4400
+
+      - path: /public-key-service
+        pathType: Prefix
+        backend:
+          service:
+            name: public-key-service
+            port:
+              number: 3300
+
+      - path: /auth
+        pathType: Prefix
+        backend:
+          service:
+            name: keycloak-service
+            port:
+              number: 8080

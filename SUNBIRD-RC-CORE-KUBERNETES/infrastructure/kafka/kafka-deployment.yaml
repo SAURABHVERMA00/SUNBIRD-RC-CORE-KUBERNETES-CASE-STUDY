@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka-deployment
+  labels:
+    app: kafka
+spec:
+  serviceName: "kafka-service"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      containers:
+      - name: kafka
+        image: confluentinc/cp-kafka:7.4.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9092
+        volumeMounts:
+        - name: kafka-storage
+          mountPath: /var/lib/kafka/data
+  
+        envFrom:
+        - configMapRef:
+            name: kafka-config
+      
+        startupProbe:
+          tcpSocket:
+            port: 9092
+          failureThreshold: 30
+          periodSeconds: 10
+
+        readinessProbe:
+          tcpSocket:
+            port: 9092
+          initialDelaySeconds: 60
+          periodSeconds: 20  
+           
+        livenessProbe:
+          tcpSocket:
+            port: 9092
+          initialDelaySeconds: 120
+          periodSeconds: 30
+
+  volumeClaimTemplates:
+  - metadata:
+      name: kafka-storage
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi

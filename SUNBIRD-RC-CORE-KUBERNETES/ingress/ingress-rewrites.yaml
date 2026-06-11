@@ -1,0 +1,39 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+
+metadata:
+  name: sunbird-ingress-rewrites
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: "/$2"
+
+spec:
+  ingressClassName: nginx
+
+  rules:
+  - host: sunbird.local
+    http:
+      paths:
+      - path: /registry(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: registry-service
+            port:
+              number: 8081
+
+      - path: /claim-ms(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: claim-ms-service
+            port:
+              number: 8082
+
+      - path: /bucket(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: file-storage-service
+            port:
+              number: 9000
