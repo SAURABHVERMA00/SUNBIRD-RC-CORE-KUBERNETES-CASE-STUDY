@@ -106,3 +106,6 @@ secrets/*.yaml
 .env*
 
 SUNBIRD-RC-CORE-KUBERNETES/helm
+
+# Ignore real public-key imports directory (store example files instead)
+SUNBIRD-RC-CORE-KUBERNETES/infrastructure/public-key/imports/
