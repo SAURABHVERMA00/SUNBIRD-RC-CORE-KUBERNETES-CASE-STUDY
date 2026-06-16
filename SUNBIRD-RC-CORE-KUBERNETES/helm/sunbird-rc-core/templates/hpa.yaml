@@ -1,0 +1,164 @@
+{{/* Backend services */}}
+{{- include "sunbird-rc.hpa" (dict
+  "root" .
+  "enabled" .Values.services.backend.bulk_issuance.enabled
+  "autoscaling" .Values.services.backend.bulk_issuance.autoscaling
+  "hpaName" "bulk-issuance-hpa"
+  "deploymentName" "bulk-issuance-deployment"
+  "app" "bulk-issuance"
+) }}
+
+{{- include "sunbird-rc.hpa" (dict
+  "root" .
+  "enabled" .Values.services.backend.certificate_api.enabled
+  "autoscaling" .Values.services.backend.certificate_api.autoscaling
+  "hpaName" "certificate-api-hpa"
+  "deploymentName" "certificate-api-deployment"
+  "app" "certificate-api"
+) }}
+
+{{- include "sunbird-rc.hpa" (dict
+  "root" .
+  "enabled" .Values.services.backend.certificate_signer.enabled
+  "autoscaling" .Values.services.backend.certificate_signer.autoscaling
+  "hpaName" "certificate-signer-hpa"
+  "deploymentName" "certificate-signer-deployment"
+  "app" "certificate-signer"
+) }}
+
+{{- include "sunbird-rc.hpa" (dict
+  "root" .
+  "enabled" .Values.services.backend.claim_ms.enabled
+  "autoscaling" .Values.services.backend.claim_ms.autoscaling
+  "hpaName" "claim-ms-hpa"
+  "deploymentName" "claim-ms-deployment"
+  "app" "claim-ms"
+) }}
+
+{{- include "sunbird-rc.hpa" (dict
+  "root" .
+  "enabled" .Values.services.backend.credential.enabled
+  "autoscaling" .Values.services.backend.credential.autoscaling
+  "hpaName" "credential-hpa"
+  "deploymentName" "credential-deployment"
+  "app" "credential"
+) }}
+
+{{- include "sunbird-rc.hpa" (dict
+  "root" .
+  "enabled" .Values.services.backend.credential_schema.enabled
+  "autoscaling" .Values.services.backend.credential_schema.autoscaling
+  "hpaName" "credential-schema-hpa"
+  "deploymentName" "credential-schema-deployment"
+  "app" "credential-schema"
+) }}
+
+{{- include "sunbird-rc.hpa" (dict
+  "root" .
+  "enabled" .Values.services.backend.digilocker_certificate_api.enabled
+  "autoscaling" .Values.services.backend.digilocker_certificate_api.autoscaling
+  "hpaName" "digilocker-certificate-api-hpa"
+  "deploymentName" "digilocker-certificate-api-deployment"
+  "app" "digilocker-certificate-api"
+) }}
+
+{{- include "sunbird-rc.hpa" (dict
+  "root" .
+  "enabled" .Values.services.backend.encryption.enabled
+  "autoscaling" .Values.services.backend.encryption.autoscaling
+  "hpaName" "encryption-hpa"
+  "deploymentName" "encryption-deployment"
+  "app" "encryption"
+) }}
+
+{{- include "sunbird-rc.hpa" (dict
+  "root" .
+  "enabled" .Values.services.backend.file_storage.enabled
+  "autoscaling" .Values.services.backend.file_storage.autoscaling
+  "hpaName" "minio-hpa"
+  "deploymentName" "minio-deployment"
+  "app" "minio"
+) }}
+
+{{- include "sunbird-rc.hpa" (dict
+  "root" .
+  "enabled" .Values.services.backend.identity.enabled
+  "autoscaling" .Values.services.backend.identity.autoscaling
+  "hpaName" "identity-hpa"
+  "deploymentName" "identity-deployment"
+  "app" "identity"
+) }}
+
+{{- include "sunbird-rc.hpa" (dict
+  "root" .
+  "enabled" .Values.services.backend.id_gen.enabled
+  "autoscaling" .Values.services.backend.id_gen.autoscaling
+  "hpaName" "id-gen-hpa"
+  "deploymentName" "id-gen-deployment"
+  "app" "id-gen"
+) }}
+
+{{- include "sunbird-rc.hpa" (dict
+  "root" .
+  "enabled" .Values.services.backend.keycloak.enabled
+  "autoscaling" .Values.services.backend.keycloak.autoscaling
+  "hpaName" "keycloak-hpa"
+  "deploymentName" "keycloak-deployment"
+  "app" "keycloak"
+) }}
+
+{{- include "sunbird-rc.hpa" (dict
+  "root" .
+  "enabled" .Values.services.backend.notification_ms.enabled
+  "autoscaling" .Values.services.backend.notification_ms.autoscaling
+  "hpaName" "notification-ms-hpa"
+  "deploymentName" "notification-ms-deployment"
+  "app" "notification-ms"
+) }}
+
+{{/* Frontend services */}}
+{{- include "sunbird-rc.hpa" (dict
+  "root" .
+  "enabled" .Values.services.frontend.context_proxy.enabled
+  "autoscaling" .Values.services.frontend.context_proxy.autoscaling
+  "hpaName" "context-proxy-hpa"
+  "deploymentName" "context-proxy-deployment"
+  "app" "context-proxy"
+) }}
+
+{{- include "sunbird-rc.hpa" (dict
+  "root" .
+  "enabled" .Values.services.frontend.nginx.enabled
+  "autoscaling" .Values.services.frontend.nginx.autoscaling
+  "hpaName" "nginx-hpa"
+  "deploymentName" "nginx-deployment"
+  "app" "nginx"
+) }}
+
+{{/* Infrastructure services (stateless deployments only) */}}
+{{- include "sunbird-rc.hpa" (dict
+  "root" .
+  "enabled" .Values.services.infrastructure.metrics.enabled
+  "autoscaling" .Values.services.infrastructure.metrics.autoscaling
+  "hpaName" "metrics-hpa"
+  "deploymentName" "metrics-deployment"
+  "app" "metrics"
+) }}
+
+{{- include "sunbird-rc.hpa" (dict
+  "root" .
+  "enabled" .Values.services.infrastructure.public_key.enabled
+  "autoscaling" .Values.services.infrastructure.public_key.autoscaling
+  "hpaName" "public-key-hpa"
+  "deploymentName" "public-key-deployment"
+  "app" "public-key"
+) }}
+
+{{- include "sunbird-rc.hpa" (dict
+  "root" .
+  "enabled" .Values.services.infrastructure.registry.enabled
+  "autoscaling" .Values.services.infrastructure.registry.autoscaling
+  "hpaName" "registry-hpa"
+  "deploymentName" "registry-deployment"
+  "app" "registry"
+) }}

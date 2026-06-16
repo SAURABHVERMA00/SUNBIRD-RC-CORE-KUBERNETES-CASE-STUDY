@@ -1,0 +1,147 @@
+{{- if .Values.services.frontend.nginx.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+{{ include "sunbird-rc.deploymentReplicas" (dict "autoscaling" .Values.services.frontend.nginx.autoscaling "replicaCount" .Values.services.frontend.nginx.replicaCount) | indent 2 }}
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: ghcr.io/sunbird-rc/sunbird-rc-nginx
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d/default.conf
+          subPath: default.conf
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          failureThreshold: 3 
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          failureThreshold: 3
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: nginx-config
+
+{{- end }}
+
+{{- if .Values.services.frontend.nginx.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  labels:
+    app: nginx
+spec:
+  type: ClusterIP
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  
+{{- end }}
+
+{{- if .Values.services.frontend.context_proxy.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: context-proxy-deployment
+  labels:
+    app: context-proxy
+spec:
+{{ include "sunbird-rc.deploymentReplicas" (dict "autoscaling" .Values.services.frontend.context_proxy.autoscaling "replicaCount" .Values.services.frontend.context_proxy.replicaCount) | indent 2 }}
+  selector:
+    matchLabels:
+      app: context-proxy
+  template:
+    metadata:
+      labels:
+        app: context-proxy
+    spec:
+      containers:
+      - name: context-proxy
+        image: ghcr.io/sunbird-rc/sunbird-rc-context-proxy-service
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 4400
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 300m
+            memory: 256Mi
+      
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 4400
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+         
+
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 4400
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+{{- end }}
+
+{{- if .Values.services.frontend.context_proxy.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: context-proxy-service
+  labels:
+    app: context-proxy
+spec:
+  type: ClusterIP
+  selector:
+    app: context-proxy
+  ports:
+    - protocol: TCP
+      name: http
+      port: 4400
+      targetPort: 4400
+
+{{- end }}
+

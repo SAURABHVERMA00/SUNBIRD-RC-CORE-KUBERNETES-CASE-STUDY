@@ -1,0 +1,95 @@
+{{- if .Values.services.ingress.ingress_rewrites.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+
+metadata:
+  name: sunbird-ingress-rewrites
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: "/$2"
+
+spec:
+  ingressClassName: {{ .Values.services.ingress.ingress_rewrites.ingressClassName | quote }}
+
+  rules:
+  - host: {{ .Values.services.ingress.ingress_rewrites.host | quote }}
+    http:
+      paths:
+      - path: /registry(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: registry-service
+            port:
+              number: 8081
+
+      - path: /claim-ms(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: claim-ms-service
+            port:
+              number: 8082
+
+      - path: /bucket(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: file-storage-service
+            port:
+              number: 9000
+
+{{- end }}
+
+{{- if .Values.services.ingress.ingress.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+
+metadata:
+  name: sunbird-ingress
+
+spec:
+  ingressClassName: {{ .Values.services.ingress.ingress.ingressClassName | quote }}
+
+  rules:
+  - host: {{ .Values.services.ingress.ingress.host | quote }}
+    http:
+      paths:
+
+      # FRONTEND
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-service
+            port:
+              number: 80
+
+      - path: /proxy
+        pathType: Prefix
+        backend:
+          service:
+            name: context-proxy-service
+            port:
+              number: 4400
+
+      - path: /public-key-service
+        pathType: Prefix
+        backend:
+          service:
+            name: public-key-service
+            port:
+              number: 3300
+
+      - path: /auth
+        pathType: Prefix
+        backend:
+          service:
+            name: keycloak-service
+            port:
+              number: 8080
+
+{{- end }}
+

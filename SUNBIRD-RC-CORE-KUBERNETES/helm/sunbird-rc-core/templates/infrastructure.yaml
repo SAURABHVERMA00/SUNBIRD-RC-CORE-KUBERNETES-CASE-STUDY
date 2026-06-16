@@ -1,0 +1,1068 @@
+{{- if .Values.services.infrastructure.clickhouse.enabled }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: clickhouse-deployment
+  labels:
+    app: clickhouse
+spec:
+  serviceName: "clickhouse-service"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: clickhouse
+  template:
+    metadata:
+      labels:
+        app: clickhouse
+    spec:
+      containers:
+      - name: clickhouse
+        image: clickhouse/clickhouse-server:23.4.2.11-alpine
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9000  #Native client port
+        - containerPort: 8123  # HTTP  health check port
+
+        {{- include "sunbird-rc.resources.heavy" (dict "memory" "1Gi" "memoryLimit" "2Gi") | nindent 8 }}
+
+        readinessProbe:
+          httpGet:
+            path: /ping
+            port: 8123
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+
+        livenessProbe:
+          httpGet:
+            path: /ping
+            port: 8123
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 3
+          failureThreshold: 3
+       
+{{- end }}
+
+{{- if .Values.services.infrastructure.clickhouse.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: clickhouse-service
+  labels:
+    app: clickhouse
+spec:
+
+  selector:
+    app: clickhouse
+  ports:
+    - protocol: TCP
+      name: native
+      port: 9002 #what other services will use to connect to clickhouse
+      targetPort: 9000 #clickhouse native client port
+    - protocol: TCP
+      name: http
+      port: 8123
+      targetPort: 8123
+  type: ClusterIP
+{{- end }}
+
+{{- if .Values.services.infrastructure.metrics.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: metrics-config
+  labels:
+    app: metrics
+data:
+  CLICK_HOUSE_URL: "clickhouse-service:9000"
+  CLICKHOUSE_DATABASE: "default"
+  KAFKA_BOOTSTRAP_SERVERS: "kafka-service:9092"
+  KAFKA_METRICS_TOPIC: "events"
+  REDIS_URL: "redis-service:6379"
+{{- end }}
+
+{{- if .Values.services.infrastructure.metrics.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metrics-deployment
+  labels:
+    app: metrics
+spec:
+{{- include "sunbird-rc.deploymentReplicas" (dict "autoscaling" .Values.services.infrastructure.metrics.autoscaling "replicaCount" .Values.services.infrastructure.metrics.replicaCount) | nindent 2 }}
+  selector:
+    matchLabels:
+      app: metrics
+  template:
+    metadata:
+      labels:
+        app: metrics
+    spec:
+      containers:
+      - name: metrics
+        image: ghcr.io/sunbird-rc/sunbird-rc-metrics
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8070
+
+        {{- include "sunbird-rc.resources.default" (dict) | nindent 8 }}
+
+        envFrom:
+        - configMapRef:
+            name: metrics-config
+      
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8070
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8070
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 3
+          failureThreshold: 3
+      
+
+   
+
+{{- end }}
+
+{{- if .Values.services.infrastructure.metrics.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: metrics-service
+  labels:
+    app: metrics
+spec:
+  selector:
+    app: metrics
+  
+  ports:
+    - protocol: TCP
+      name: http
+      port: 8070
+      targetPort: 8070
+   
+{{- end }}
+
+{{- if .Values.services.infrastructure.redis.enabled }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-deployment
+  labels:
+    app: redis
+spec:
+  serviceName: "redis-service"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:latest
+        imagePullPolicy: IfNotPresent
+
+        ports:
+        - containerPort: 6379
+
+        {{- include "sunbird-rc.resources.default" (dict "cpu" "100m" "memory" "256Mi" "cpuLimit" "500m" "memoryLimit" "512Mi") | nindent 8 }}
+
+        volumeMounts:
+        - name: redis-storage
+          mountPath: /data
+
+        readinessProbe:
+          tcpSocket:
+            port: 6379
+          initialDelaySeconds: 5
+          periodSeconds: 10
+
+        livenessProbe:
+          tcpSocket:
+            port: 6379
+          initialDelaySeconds: 15
+          periodSeconds: 20
+
+  volumeClaimTemplates:
+  - metadata:
+      name: redis-storage
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 5Gi
+
+# Redis in Kubernetes should be exposed via a ClusterIP Service and health-checked using TCP socket probes.
+#Redis is a TCP service, not an HTTP service — so TCP socket probes are the correct he
+{{- end }}
+
+{{- if .Values.services.infrastructure.redis.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+  labels:
+    app: redis
+spec:
+  selector:
+    app: redis
+  ports:
+  - name: redis
+    port: 6379
+    targetPort: 6379
+  type: ClusterIP
+
+{{- end }}
+
+{{- if .Values.services.infrastructure.public_key.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: public-key-deployment
+  labels:
+    app: public-key
+spec:
+{{- include "sunbird-rc.deploymentReplicas" (dict "autoscaling" .Values.services.infrastructure.public_key.autoscaling "replicaCount" .Values.services.infrastructure.public_key.replicaCount) | nindent 2 }}
+  selector:
+    matchLabels:
+      app: public-key
+  template:
+    metadata:
+      labels:
+        app: public-key
+    spec:
+      containers:
+      - name: public-key
+        image: ghcr.io/sunbird-rc/sunbird-rc-public-key-service
+        imagePullPolicy: IfNotPresent
+
+        ports:
+        - containerPort: 3300
+
+        {{- include "sunbird-rc.resources.light" (dict) | nindent 8 }}
+
+        env:
+        - name: CONFIG_BASE_PATH
+          value: /etc/keys
+        
+
+        volumeMounts:
+        - name: key-imports
+          mountPath: /etc/keys
+          readOnly: true
+
+        # Docker healthcheck equivalent
+        readinessProbe:
+          httpGet:
+            path: /public-key-service/api/v1/health
+            port: 3300
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+        # Optional but recommended
+        livenessProbe:
+          httpGet:
+            path: /public-key-service/api/v1/health
+            port: 3300
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+      volumes:
+      - name: key-imports
+        configMap:
+          name: public-key-imports
+
+
+# kubectl create configmap public-key-imports \
+ # --from-file=imports \
+ # --dry-run=client -o yaml > public-key-imports.yaml
+# run: kubectl apply -f public-key-imports.yaml
+
+{{- end }}
+
+{{- if .Values.services.infrastructure.public_key.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: public-key-service
+  labels:
+    app: public-key
+spec:
+  selector:
+    app: public-key
+  ports:
+  - name: http
+    port: 3300
+    targetPort: 3300
+  type: ClusterIP
+
+{{- end }}
+
+{{- if .Values.services.infrastructure.zookeeper.enabled }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: zookeeper-deployment
+  labels:
+    app: zookeeper
+spec:
+  serviceName: "zookeeper-service"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zookeeper
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+    spec:
+      containers:
+      - name: zookeeper
+        image: confluentinc/cp-zookeeper:latest
+        ports:
+        - containerPort: 2181
+
+        {{- include "sunbird-rc.resources.default" (dict "cpu" "200m" "memory" "512Mi" "cpuLimit" "500m" "memoryLimit" "1Gi") | nindent 8 }}
+
+        env:
+        - name: ZOOKEEPER_CLIENT_PORT
+          value: "2181"
+        - name: ZOOKEEPER_TICK_TIME
+          value: "2000"
+
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/zookeeper
+
+        readinessProbe:
+          tcpSocket:
+            port: 2181
+          initialDelaySeconds: 10
+          periodSeconds: 10
+
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+      labels:
+        app: zookeeper
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 5Gi
+{{- end }}
+
+{{- if .Values.services.infrastructure.zookeeper.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper-service
+  labels:
+    app: zookeeper
+spec:
+  clusterIP: None
+  selector:
+    app: zookeeper
+  ports:
+  - port: 2181
+    targetPort: 2181
+   
+
+{{- end }}
+
+{{- if .Values.services.infrastructure.registry.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: registry-config
+  labels:
+    app: registry
+data:
+  connectionInfo_uri: jdbc:postgresql://postgres-service:5432/registry
+  connectionInfo_username: postgres
+
+  encryption_enabled: "false"
+  encryption_health_check_url: http://encryption-service:8013/health
+  encryption_uri: http://encryption-service:8013/crypto/v1/_encrypt
+  decryption_uri: http://encryption-service:8013/crypto/v1/_decrypt
+  encryption_batch_uri: http://encryption-service:8013/crypto/v1/_encrypt
+  decryption_batch_uri: http://encryption-service:8013/crypto/v1/_decrypt
+
+  event_enabled: "false"
+  event_topic: events
+  event_providerName: dev.sunbirdrc.registry.service.impl.KafkaEventService
+
+  elastic_search_connection_url: elastic-service:9200
+  elastic_search_scheme: http
+  elastic_search_auth_enabled: "false"
+  elastic_search_username: elastic
+  search_providerName: dev.sunbirdrc.registry.service.NativeSearchService
+
+  sunbird_sso_realm: sunbird-rc
+  sunbird_sso_url: http://keycloak-service:8080/auth
+  oauth2_resource_uri: http://keycloak-service:8080/auth/realms/sunbird-rc
+  oauth2_resource_roles_path: realm_access.roles
+  identity_provider: dev.sunbirdrc.auth.keycloak.KeycloakProviderImpl
+
+  idgen_enabled: "false"
+  idgen_health_check_url: http://id-gen-service:8088/egov-idgen/health
+  idgen_generate_url: http://id-gen-service:8088/egov-idgen/id/_generate
+  idgen_id_format_url: http://id-gen-service:8088/egov-idgen/id/_format/add
+
+  sunbird_sso_admin_client_id: admin-api
+  sunbird_sso_client_id: registry-frontend
+
+  claims_enabled: "false"
+  claims_url: http://claim-ms-service:8082
+
+  signature_enabled: "false"
+  signature_provider: dev.sunbirdrc.registry.service.impl.SignatureV1ServiceImpl
+  sign_url: http://certificate-signer-service:8079/sign
+  verify_url: http://certificate-signer-service:8079/verify
+  sign_health_check_url: http://certificate-signer-service:8079/health
+
+  certificate_enabled: "false"
+  pdf_url: http://certificate-api-service:8078/api/v1/certificatePDF
+  certificate_health_check_url: http://certificate-api-service:8078/health
+  template_base_url: http://registry-service:8081/api/v1/templates/
+
+  sunbird_keycloak_user_set_password: "true"
+
+  filestorage_enabled: "false"
+  filestorage_connection_url: http://file-storage-service:9000
+  filestorage_bucket_key: issuance
+
+  registry_base_apis_enable: "false"
+  logging.level.root: INFO
+  enable_external_templates: "true"
+
+  async_enabled: "false"
+  authentication_enabled: "true"
+
+  kafka_bootstrap_address: kafka-service:9092
+
+  webhook_enabled: "false"
+ # webhook_url: http://localhost:5001/api/v1/callback
+
+  redis_host: redis-service
+  redis_port: "6379"
+
+  manager_type: DefinitionsManager
+  expand_reference: "false"
+
+  swagger_title: Sunbird Registry and Credential
+
+
+
+  notification_async_enabled: "false"
+  notification_enabled: "false"
+  notification_url: http://notification-ms-service:8765/notification-service/v1/notification
+
+  # did_enabled: "false"
+
+  did_enabled: "true"
+  did_health_check_url: http://identity-service:3332/health
+  did_generate_url: http://identity-service:3332/did/generate
+  did_resolve_url: http://identity-service:3332/did/resolve/{id}
+{{- end }}
+
+{{- if .Values.services.infrastructure.registry.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: registry-deployment
+  labels:
+    app: registry
+spec:
+{{- include "sunbird-rc.deploymentReplicas" (dict "autoscaling" .Values.services.infrastructure.registry.autoscaling "replicaCount" .Values.services.infrastructure.registry.replicaCount) | nindent 2 }}
+  selector:
+    matchLabels:
+      app: registry
+  template:
+    metadata:
+      labels:
+        app: registry
+    spec:
+      containers:
+      - name: registry
+        image: ghcr.io/sunbird-rc/sunbird-rc-core:v2.0.0-rc1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8081
+
+        {{- include "sunbird-rc.resources.heavy" (dict) | nindent 8 }}
+
+        envFrom:
+        - secretRef:
+            name: registry-secret
+        - configMapRef:
+            name: registry-config
+        env:
+        - name: PRISMA_MIGRATE
+          value: "true"
+    
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8081
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 60
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8081
+          initialDelaySeconds: 180
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 5
+        startupProbe:
+          tcpSocket:
+            port: 8081
+         
+          failureThreshold: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+
+     
+        
+
+{{- end }}
+
+{{- if .Values.services.infrastructure.registry.enabled }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: registry-secret
+  labels:
+    app: registry
+type: Opaque
+stringData:
+  connectionInfo_password: {{ .Values.secrets.registry.postgresPassword | quote }}
+  elastic_search_password: {{ .Values.secrets.registry.elasticsearchPassword | quote }}
+  sunbird_sso_admin_client_secret: {{ .Values.secrets.registry.keycloakClientSecret | quote }}
+  filestorage_access_key: {{ .Values.secrets.registry.filestorage_access_key | quote }}
+  filestorage_secret_key: {{ .Values.secrets.registry.filestorage_secret_key | quote }}
+  sunbird_keycloak_user_password: {{ .Values.secrets.registry.keycloakUserPassword | quote }}
+
+{{- end }}
+
+{{- if .Values.services.infrastructure.registry.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: registry-service
+  labels:
+    app: registry 
+spec:
+  selector:
+    app: registry
+  
+  ports:
+    - protocol: TCP
+      name: http
+      port: 8081
+      targetPort: 8081  
+  type: LoadBalancer
+{{- end }}
+
+{{- if .Values.services.infrastructure.vault.enabled }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: vault-deployment
+spec:
+  serviceName: "vault-service"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vault
+  template:
+    metadata:
+      labels:
+        app: vault
+    spec:
+      containers:
+        - name: vault
+          image: vault:1.13.3
+          imagePullPolicy: IfNotPresent
+
+          args:
+            - "vault"
+            - "server"
+            - "-config=/vault/config/vault.json"
+          ports:
+            - containerPort: 8200
+
+          {{- include "sunbird-rc.resources.default" (dict) | nindent 10 }}
+
+          env:
+            - name: VAULT_ADDR
+              value: "http://vault-service:8200"
+            - name: VAULT_API_ADDR
+              value: "http://vault-service:8200"
+            - name: VAULT_ADDRESS
+              value: "http://vault-service:8200"
+            - name: VAULT_SKIP_CHOWN
+              value: "true"
+          volumeMounts:
+            - name: vault-config
+              mountPath: /vault/config
+            - name: vault-data
+              mountPath: /vault/data
+          securityContext:
+            capabilities:
+              add:
+                - IPC_LOCK
+          readinessProbe:
+            tcpSocket:
+              port: 8200
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 5
+          livenessProbe:
+            tcpSocket:
+              port: 8200
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 5
+          startupProbe:
+            tcpSocket:
+              port: 8200
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 30
+      volumes:
+        - name: vault-config
+          configMap:
+            name: vault-config
+  volumeClaimTemplates:
+  - metadata:
+      name: vault-data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi
+
+# i just add vault.json file in config map
+#kubectl create configmap vault-config \
+#  --from-file=vault.json \
+#  --dry-run=client -o yaml > vault-config.yaml
+ # run this command to create config map file
+ # kubectl apply -f vault-config.yaml
+
+{{- end }}
+
+{{- if .Values.services.infrastructure.vault.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vault-service
+  labels:
+    app: vault
+spec:
+  clusterIP: None
+  selector:
+    app: vault
+  ports:
+    - port: 8200
+      targetPort: 8200
+
+{{- end }}
+
+{{- if .Values.services.infrastructure.kafka.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-config
+  labels:
+    app: kafka
+data:
+  KAFKA_BROKER_ID: "1"
+  KAFKA_ZOOKEEPER_CONNECT: "zookeeper-service:2181"
+
+  KAFKA_LISTENERS: "INTERNAL://0.0.0.0:9092"
+  KAFKA_ADVERTISED_LISTENERS: "INTERNAL://kafka-service:9092"
+  KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "INTERNAL:PLAINTEXT"
+  KAFKA_INTER_BROKER_LISTENER_NAME: "INTERNAL"
+
+  KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+
+{{- end }}
+
+{{- if .Values.services.infrastructure.kafka.enabled }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka-deployment
+  labels:
+    app: kafka
+spec:
+  serviceName: "kafka-service"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      containers:
+      - name: kafka
+        image: confluentinc/cp-kafka:7.4.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9092
+
+        {{- include "sunbird-rc.resources.heavy" (dict "memory" "1Gi" "memoryLimit" "2Gi") | nindent 8 }}
+
+        volumeMounts:
+        - name: kafka-storage
+          mountPath: /var/lib/kafka/data
+  
+        envFrom:
+        - configMapRef:
+            name: kafka-config
+      
+        startupProbe:
+          tcpSocket:
+            port: 9092
+          failureThreshold: 30
+          periodSeconds: 10
+
+        readinessProbe:
+          tcpSocket:
+            port: 9092
+          initialDelaySeconds: 60
+          periodSeconds: 20  
+           
+        livenessProbe:
+          tcpSocket:
+            port: 9092
+          initialDelaySeconds: 120
+          periodSeconds: 30
+
+  volumeClaimTemplates:
+  - metadata:
+      name: kafka-storage
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi
+
+{{- end }}
+
+{{- if .Values.services.infrastructure.kafka.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-service
+  labels:
+    app: kafka
+spec:
+  clusterIP: None #headless service
+  selector:
+    app: kafka
+  
+  ports:
+    - protocol: TCP
+      name: http
+      port: 9092
+      targetPort: 9092
+   
+{{- end }}
+
+{{- if .Values.services.infrastructure.db.enabled }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-deployment
+  labels:
+    app: postgres
+spec:
+  serviceName: "postgres-service"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:14.20-trixie
+        ports:
+        - containerPort: 5432
+
+        {{- include "sunbird-rc.resources.heavy" (dict "memory" "512Mi" "memoryLimit" "1Gi") | nindent 8 }}
+
+        volumeMounts: 
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        env:
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: POSTGRES_PASSWORD
+        - name: POSTGRES_DB
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: POSTGRES_DB
+        readinessProbe:
+          exec:
+            command: ["sh", "-c", "pg_isready -U $POSTGRES_USER"]
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 5
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-storage
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 5Gi
+        
+{{- end }}
+
+{{- if .Values.services.infrastructure.db.enabled }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-secret
+  labels:
+    app: postgres
+type: Opaque
+stringData:
+  POSTGRES_USER: {{ .Values.secrets.postgres_db.user | quote }}
+  POSTGRES_PASSWORD: {{ .Values.secrets.postgres_db.password | quote }}
+  POSTGRES_DB: {{ .Values.secrets.postgres_db.database | quote }}
+
+{{- end }}
+
+{{- if .Values.services.infrastructure.db.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  labels:
+    app: postgres
+spec:
+  type: LoadBalancer
+  selector:
+    app: postgres
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  
+{{- end }}
+
+{{- if .Values.services.infrastructure.elastic.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: elasticsearch-config
+  labels:
+    app: elastic-search
+data:
+  discovery.type: single-node
+  ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+  xpack.security.enabled: "false"
+
+
+{{- end }}
+
+{{- if .Values.services.infrastructure.elastic.enabled }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: elastic-deployment
+  labels:
+    app: elastic-search
+spec:
+  serviceName: "elastic-service"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: elastic-search
+  template:
+    metadata:
+      labels:
+        app: elastic-search
+    spec:
+      containers:
+      - name: elastic-search
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.12.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9200
+        - containerPort: 9300
+
+        {{- include "sunbird-rc.resources.heavy" (dict "memory" "1Gi" "memoryLimit" "2Gi") | nindent 8 }}
+
+        env:
+        - name: discovery.type
+          valueFrom:
+            configMapKeyRef:
+              name: elasticsearch-config
+              key: discovery.type
+        - name: ES_JAVA_OPTS
+          valueFrom:
+            configMapKeyRef:
+              name: elasticsearch-config
+              key: ES_JAVA_OPTS
+        - name: xpack.security.enabled
+          valueFrom:
+            configMapKeyRef:
+              name: elasticsearch-config
+              key: xpack.security.enabled
+        - name: ELASTIC_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: elasticsearch-secret
+              key: ELASTIC_PASSWORD
+        - name: BASIC_AUTH
+          valueFrom:
+            secretKeyRef:
+              name: elasticsearch-secret
+              key: BASIC_AUTH
+        volumeMounts:
+        - name: elasticsearch-storage
+          mountPath: /usr/share/elasticsearch/data/*
+        readinessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - |
+              curl -f http://localhost:9200/_cluster/health \
+                -H "Authorization: Basic ${BASIC_AUTH}" 
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 5
+        startupProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - |
+              curl -f http://localhost:9200 \
+                -H "Authorization: Basic ${BASIC_AUTH}"
+          failureThreshold: 30   # 30 × 10s = 5 minutes
+          periodSeconds: 10
+
+  volumeClaimTemplates:
+  - metadata:
+      name: elasticsearch-storage
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 20Gi
+{{- end }}
+
+{{- if .Values.services.infrastructure.elastic.enabled }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: elasticsearch-secret
+  labels:
+    app: elastic-search
+type: Opaque
+stringData:
+  ELASTIC_PASSWORD: {{ .Values.secrets.elasticsearch.password | quote }}
+  BASIC_AUTH: {{ .Values.secrets.elasticsearch.basicAuth | quote }}
+
+{{- end }}
+
+{{- if .Values.services.infrastructure.elastic.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elastic-service
+  labels:
+    app: elastic-search
+spec:
+  selector:
+    app: elastic-search
+  ports:
+    - protocol: TCP
+      name: http
+      port: 9200
+      targetPort: 9200
+    - protocol: TCP
+      name: transport
+      port: 9300
+      targetPort: 9300
+  type: LoadBalancer
+
+{{- end }}
+

@@ -1,0 +1,254 @@
+# This file is SAFE to commit to Git - Contains DUMMY values only!
+# ============================================================
+# HOW TO USE:
+# 1. Copy this file: cp values.example.yaml values.yaml
+# 2. Edit values.yaml with REAL secrets
+# 3. values.yaml is in .gitignore - never gets committed
+# ============================================================
+
+services:
+  backend:
+    bulk_issuance:
+      enabled: true
+      replicaCount: 1
+      autoscaling:
+        enabled: false
+        minReplicas: 2
+        maxReplicas: 10
+        targetCPUUtilizationPercentage: 80
+        targetMemoryUtilizationPercentage: 80
+    certificate_api:
+      enabled: true
+      replicaCount: 1
+      autoscaling:
+        enabled: false
+        minReplicas: 2
+        maxReplicas: 10
+        targetCPUUtilizationPercentage: 80
+        targetMemoryUtilizationPercentage: 80
+    certificate_signer:
+      enabled: true
+      replicaCount: 1
+      autoscaling:
+        enabled: false
+        minReplicas: 2
+        maxReplicas: 10
+        targetCPUUtilizationPercentage: 80
+        targetMemoryUtilizationPercentage: 80
+    claim_ms:
+      enabled: true
+      replicaCount: 1
+      autoscaling:
+        enabled: false
+        minReplicas: 1
+        maxReplicas: 3
+        targetCPUUtilizationPercentage: 60
+        targetMemoryUtilizationPercentage: 70
+    credential:
+      enabled: true
+      replicaCount: 1
+      autoscaling:
+        enabled: false
+        minReplicas: 1
+        maxReplicas: 3
+        targetCPUUtilizationPercentage: 60
+        targetMemoryUtilizationPercentage: 70
+    credential_schema:
+      enabled: true
+      replicaCount: 1
+      autoscaling:
+        enabled: false
+        minReplicas: 1
+        maxReplicas: 3
+        targetCPUUtilizationPercentage: 60
+        targetMemoryUtilizationPercentage: 70
+    digilocker_certificate_api:
+      enabled: true
+      replicaCount: 1
+      autoscaling:
+        enabled: false
+        minReplicas: 1
+        maxReplicas: 2
+        targetCPUUtilizationPercentage: 70
+        targetMemoryUtilizationPercentage: 75
+    encryption:
+      enabled: true
+      replicaCount: 1
+      autoscaling:
+        enabled: false
+        minReplicas: 1
+        maxReplicas: 2
+        targetCPUUtilizationPercentage: 70
+        targetMemoryUtilizationPercentage: 75
+    file_storage:
+      enabled: true
+      replicaCount: 1
+      # MinIO uses ReadWriteOnce PVC by default — enable autoscaling only with
+      # distributed MinIO or shared storage (manual review required).
+      autoscaling:
+        enabled: false
+        minReplicas: 2
+        maxReplicas: 10
+        targetCPUUtilizationPercentage: 80
+        targetMemoryUtilizationPercentage: 80
+    identity:
+      enabled: true
+      replicaCount: 1
+      autoscaling:
+        enabled: false
+        minReplicas: 2
+        maxReplicas: 10
+        targetCPUUtilizationPercentage: 80
+        targetMemoryUtilizationPercentage: 80
+    id_gen:
+      enabled: true
+      replicaCount: 1
+      autoscaling:
+        enabled: false
+        minReplicas: 2
+        maxReplicas: 10
+        targetCPUUtilizationPercentage: 80
+        targetMemoryUtilizationPercentage: 80
+    keycloak:
+      enabled: true
+      replicaCount: 1
+      # Keycloak session affinity may be required before enabling HPA (manual review).
+      autoscaling:
+        enabled: false
+        minReplicas: 2
+        maxReplicas: 10
+        targetCPUUtilizationPercentage: 80
+        targetMemoryUtilizationPercentage: 80
+    notification_ms:
+      enabled: true
+      replicaCount: 1
+      autoscaling:
+        enabled: false
+        minReplicas: 1
+        maxReplicas: 3
+        targetCPUUtilizationPercentage: 60
+        targetMemoryUtilizationPercentage: 70
+  frontend:
+    context_proxy:
+      enabled: true
+      replicaCount: 1
+      autoscaling:
+        enabled: false
+        minReplicas: 1
+        maxReplicas: 3
+        targetCPUUtilizationPercentage: 50
+        targetMemoryUtilizationPercentage: 60
+    nginx:
+      enabled: true
+      replicaCount: 1
+      autoscaling:
+        enabled: false
+        minReplicas: 1
+        maxReplicas: 3
+        targetCPUUtilizationPercentage: 50
+        targetMemoryUtilizationPercentage: 60
+  infrastructure:
+    # StatefulSets — not eligible for Deployment HPA; use operator/KEDA or external managed services.
+    clickhouse:
+      enabled: true
+    db:
+      enabled: true
+    elastic:
+      enabled: true
+    kafka:
+      enabled: true
+    metrics:
+      enabled: true
+      replicaCount: 1
+      autoscaling:
+        enabled: false
+        minReplicas: 2
+        maxReplicas: 10
+        targetCPUUtilizationPercentage: 80
+        targetMemoryUtilizationPercentage: 80
+    public_key:
+      enabled: true
+      replicaCount: 1
+      autoscaling:
+        enabled: false
+        minReplicas: 2
+        maxReplicas: 10
+        targetCPUUtilizationPercentage: 80
+        targetMemoryUtilizationPercentage: 80
+    redis:
+      enabled: true
+    registry:
+      enabled: true
+      replicaCount: 1
+      autoscaling:
+        enabled: false
+        minReplicas: 2
+        maxReplicas: 10
+        targetCPUUtilizationPercentage: 80
+        targetMemoryUtilizationPercentage: 80
+    vault:
+      enabled: true
+    zookeeper:
+      enabled: true
+  ingress:
+    ingress:
+      enabled: true
+      host: sunbird.local
+      ingressClassName: nginx
+    ingress_rewrites:
+      enabled: true
+      host: sunbird.local
+      ingressClassName: nginx
+
+# ============================================================
+# SECRETS - Placeholder Values (Change these!)
+# ============================================================
+# Replace CHANGE_ME_* with your actual secrets in values.yaml
+# Never commit values.yaml - it should be in .gitignore
+# ============================================================
+
+secrets:
+  # Database Credentials - PostgreSQL
+  postgres:
+    username: CHANGE_ME_POSTGRES_USER
+    password: CHANGE_ME_POSTGRES_PASSWORD
+
+  # Keycloak Admin Credentials
+  keycloak:
+    user: CHANGE_ME_KEYCLOAK_USER
+    password: CHANGE_ME_KEYCLOAK_PASSWORD
+
+  # Digilocker Integration Secrets
+  digilocker:
+    clientSecret: CHANGE_ME_KEYCLOAK_CLIENT_SECRET
+    hmacAuthKey: CHANGE_ME_DIGILOCKER_HMAC_AUTHKEY
+
+  # Identity Service Secrets
+  identity:
+    databaseUrl: CHANGE_ME_DATABASE_URL
+    vaultToken: CHANGE_ME_VAULT_TOKEN
+
+  # MinIO (File Storage) Credentials
+  minio:
+    rootUser: CHANGE_ME_MINIO_USER
+    rootPassword: CHANGE_ME_MINIO_PASSWORD
+
+  # PostgreSQL Database Credentials
+  postgres_db:
+    user: CHANGE_ME_POSTGRES_DB_USER
+    password: CHANGE_ME_POSTGRES_DB_PASSWORD
+    database: CHANGE_ME_POSTGRES_DB_NAME
+
+  # Elasticsearch Credentials
+  elasticsearch:
+    password: CHANGE_ME_ELASTICSEARCH_PASSWORD
+    basicAuth: CHANGE_ME_ELASTICSEARCH_BASIC_AUTH
+
+  # Registry Service Secrets
+  registry:
+    postgresPassword: CHANGE_ME_REGISTRY_POSTGRES_PASSWORD
+    elasticsearchPassword: CHANGE_ME_REGISTRY_ELASTICSEARCH_PASSWORD
+    keycloakClientSecret: CHANGE_ME_REGISTRY_KEYCLOAK_CLIENT_SECRET
+    filestorage_access_key: CHANGE_ME_FILESTORAGE_ACCESS_KEY
+    filestorage_secret_key: CHANGE_ME_FILESTORAGE_SECRET_KEY
+    keycloakUserPassword: CHANGE_ME_REGISTRY_KEYCLOAK_USER_PASSWORD
