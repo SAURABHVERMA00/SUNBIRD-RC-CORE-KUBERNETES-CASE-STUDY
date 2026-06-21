@@ -5,12 +5,40 @@ Expand the name of the chart.
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 {{/*
 Create a default fully qualified app name.
 */}}
 {{- define "sunbird-rc.fullname" -}}
 {{- printf "%s-%s" .Release.Name .Chart.Name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
+
+
+
+
+
+
+
+
+
 
 {{/*
 Common labels applied to chart resources.
@@ -20,6 +48,16 @@ helm.sh/chart: {{ include "sunbird-rc.name" . }}-{{ .Chart.Version | replace "+"
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
+
+
+
+
+
+
+
+
+
+
 
 {{/*
 Deployment replica count — omitted when HPA manages scaling.
@@ -32,11 +70,15 @@ replicas: {{ .replicaCount | default 1 }}
 {{- end -}}
 {{- end -}}
 
+
+
+
 {{/*
 Standard HorizontalPodAutoscaler (autoscaling/v2, CPU + optional memory).
 Expected dict keys:
   root, enabled, autoscaling, hpaName, deploymentName, app
 */}}
+
 {{- define "sunbird-rc.hpa" -}}
 {{- if and .enabled .autoscaling.enabled }}
 ---
