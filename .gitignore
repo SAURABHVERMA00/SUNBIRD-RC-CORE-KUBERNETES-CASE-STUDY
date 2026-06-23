@@ -111,3 +111,4 @@ SUNBIRD-RC-CORE-KUBERNETES/helm/rendered.yaml
 # Ignore real public-key imports directory (store example files instead)
 SUNBIRD-RC-CORE-KUBERNETES/infrastructure/public-key/imports/
 SUNBIRD-RC-CORE-KUBERNETES/helm/sunbird-rc-core/copy
+SUNBIRD-RC-CORE-KUBERNETES/helm/monitoring/commandPractice.yaml
